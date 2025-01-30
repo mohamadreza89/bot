@@ -1,11 +1,10 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-# جایگزین کردن توکن شما
-TOKEN = '8136322119:AAHrRKtXw6SHcGiyBwjzEhytb9ilVI8h7JM'
-YOUR_TELEGRAM_ID = 'Mohamadrezazxzx'  # حذف @ از آیدی برای ایجاد لینک مستقیم
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+YOUR_TELEGRAM_ID = 'YOUR_TELEGRAM_ID'
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def start(update: Update, context: CallbackContext) -> None:
     user_first_name = update.message.from_user.first_name
     welcome_message = (
         f"سلام {user_first_name}! خوش آمدید به ربات ما 🌟\n\n"
@@ -15,10 +14,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "لطفاً یکی از گزینه‌های زیر را انتخاب کنید:"
     )
 
-    await update.message.reply_text(
-        welcome_message,
-        parse_mode='Markdown'
-    )
+    update.message.reply_text(welcome_message, parse_mode='Markdown')
 
     keyboard = [
         [KeyboardButton("👥 درباره ما"), KeyboardButton("🤖 ساخت ربات")]
@@ -26,56 +22,51 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-    await update.message.reply_text(
-        'لطفاً یکی از گزینه‌های زیر را انتخاب کنید:',
-        reply_markup=reply_markup
-    )
+    update.message.reply_text('لطفاً یکی از گزینه‌های زیر را انتخاب کنید:', reply_markup=reply_markup)
 
-async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def about(update: Update, context: CallbackContext) -> None:
     keyboard = [[KeyboardButton("🔙 بازگشت")]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-    await update.message.reply_text(
+    update.message.reply_text(
         "ما یک تیم پرشور و پرانرژی هستیم که به توسعه ربات‌های تلگرام مشغولیم. برای اطلاعات بیشتر با ما تماس بگیرید!",
         reply_markup=reply_markup
     )
 
-async def build_bot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def build_bot(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [InlineKeyboardButton("📦 سفارش", url=f"https://t.me/{YOUR_TELEGRAM_ID}")],
         [KeyboardButton("🔙 بازگشت")]
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-    await update.message.reply_text(
-        'برای ساخت ربات، لطفاً روی دکمه زیر کلیک کنید:',
-        reply_markup=reply_markup
-    )
+    update.message.reply_text('برای ساخت ربات، لطفاً روی دکمه زیر کلیک کنید:', reply_markup=reply_markup)
 
-async def back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await start(update, context)
+def back(update: Update, context: CallbackContext) -> None:
+    start(update, context)
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def handle_message(update: Update, context: CallbackContext) -> None:
     text = update.message.text
 
     if text == "👥 درباره ما":
-        await about(update, context)
+        about(update, context)
     elif text == "🤖 ساخت ربات":
-        await build_bot(update, context)
+        build_bot(update, context)
     elif text == "🔙 بازگشت":
-        await back(update, context)
+        back(update, context)
     else:
-        await update.message.reply_text(
-            'لطفاً یکی از گزینه‌های منو را انتخاب کنید.'
-        )
+        update.message.reply_text('لطفاً یکی از گزینه‌های منو را انتخاب کنید.')
 
 def main():
-    application = Application.builder().token(TOKEN).build()
+    updater = Updater(TOKEN)
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    dispatcher = updater.dispatcher
 
-    application.run_polling()
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
     main()
